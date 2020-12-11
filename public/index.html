@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Hello Bulma!</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.1/css/bulma.min.css">
+    <style>
+        .is-hidden {
+            display: none;
+        }
+        
+    </style>
+  </head>
+  <body>
+      <div class="a"></div><div class="a"></div>
+  <section class="section">
+    <div class="container">
+      <h1 class="title">
+        Monito
+      </h1>
+      <p class="subtitle">
+            Monitoring framework
+            <div id="serverinfo">
+              <p>Server Name: <span id="server-name"></span></p>
+              <p>IP: <span id="ip"></span></p>
+            </div>
+    </p>
+    <div class="section">
+        <div id="tabs" class="tabs">
+            <ul>
+              <li class="is-active"><a onclick="switchTo('Logs')">Logs</a></li>
+              <li><a onclick="switchTo('Triggers')">Triggers</a></li>
+              <li><a onclick="switchTo('Settings')">Settings</a></li>
+            </ul>
+          </div>
+          <div class="tab-contents Logs-tabcontents">
+            <div class="title is-4 mt-5">
+              Logs
+            </div>
+            <div id="logs">
+
+            </div>
+          </div>
+          <div id="triggers" class="tab-contents Triggers-tabcontents">
+            
+          </div>
+          <div id="settings" class="tab-contents Settings-tabcontents">
+            hi
+          </div>
+    </div>
+    </div>
+  </section>
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="/js/tabs.js"></script>
+  <script src="/js/triggers.js"></script>
+
+  <script>
+    
+
+    const code = prompt("Please input the secret code.")
+
+    var socket = io();
+
+    var damntriggers = {}
+    var logs = []
+
+    fetch("/api/info?code=" + code).then(a => a.json()).then(data => {
+      if (data.error) {
+        alert("code is bad!")
+        location.reload()
+      }
+      document.getElementById("server-name").innerText = data.server.name
+      document.getElementById("ip").innerText = data.server.ip
+    })
+
+    socket.emit("login", code)
+    
+
+    fetch("/api/triggers/?code=" + code).then(a => a.json()).then(data => {
+        console.log(data.data)
+        renderTriggers(data.data)
+        damntriggers = data.data
+    })
+    
+    socket.on("trigger", ({trigger}) => {
+        if (Object.keys(damntriggers).includes(trigger))
+        {
+            logs.push({trigger})
+            renderLogs()
+        } 
+    })
+
+    function renderLogs() {
+      logs.forEach(({trigger}) => {
+        document.getElementById("logs").innerHTML = `
+              <br><div class="card">
+                  <div class="card-content">
+                      <div class="tag is-${damntriggers[trigger].type}">${damntriggers[trigger].type.toUpperCase()}</div><b> ${damntriggers[trigger].name} Trigger Hit</b><br><b>From IP:</b> 127.0.0.1 at 12/10/2020 4:18 PM<br>
+                      <b>Trigger Description:</b> ${damntriggers[trigger].description}
+                  </div>
+              </div>
+              ${document.getElementById("logs").innerHTML}
+              `
+      })
+    }
+
+  </script>
+
+  </body>
+</html>

@@ -1,0 +1,31 @@
+{
+  "settings": {
+    "server": {
+      "name": "10101"
+    },
+    "installed": true
+  },
+  "logs": [
+    {
+      "trigger": "Trigger0"
+    },
+    {
+      "trigger": "newShell"
+    },
+    {
+      "trigger": "newFlag"
+    }
+  ],
+  "triggers": {
+    "newShell": {
+      "name": "New Shell",
+      "description": "Someone has popped a new shell!",
+      "type": "warning"
+    },
+    "newFlag": {
+      "name": "New Flag",
+      "description": "Someone submitted a new flag!",
+      "type": "success"
+    }
+  }
+}
