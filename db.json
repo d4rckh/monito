@@ -1,9 +1,10 @@
 {
   "settings": {
     "server": {
-      "name": "10101"
+      "name": "test"
     },
-    "installed": true
+    "installed": true,
+    "code": "10"
   },
   "logs": [
     {

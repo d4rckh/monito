@@ -2,9 +2,10 @@ const router = require("express").Router()
 const db = require("../database.js")
 
 router.use((req, res, next) => {
+    const code = db.get("settings.code").value()
     if (
-        (req.query.code == "1" && req.method == "GET") ||
-        (req.body.code == "1" && req.method == "POST")
+        (req.query.code == code && req.method == "GET") ||
+        (req.body.code == code && req.method == "POST")
     ) {
         next()
     } else {

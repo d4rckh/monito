@@ -23,8 +23,9 @@ app.post("/api/install", (req, res) => {
     if (!db.get("settings.installed").value()) {
         console.log("hi")
         db  .set("settings.installed", true)
-            .set("settings.server.name", req.body.servername)
-            .write()
+        .set("settings.server.name", req.body.servername)
+        .set("settings.code", req.body.code)
+        .write()
     }
 
     res.redirect("/index.html")
@@ -37,7 +38,7 @@ app.use(express.static("public"))
 io.on('connection', (socket) => {
   console.log('a user connected');
   socket.on("login", (data) => {
-    if (data == "1") {
+    if (data == db.get("settings.code").value()) {
         db.get("logs").value().forEach(log => {
             socket.emit("trigger", log)
         })

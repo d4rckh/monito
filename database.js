@@ -10,7 +10,8 @@ db.defaults({
         server: {
             name: "Untitled Monito Server"
         },
-        installed: false
+        installed: false,
+        code: ""
     },
     logs: [],
     triggers: []
