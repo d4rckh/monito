@@ -24,7 +24,6 @@
         Monitoring framework
         <div id="serverinfo">
           <p>Server Name: <span id="server-name">Login first.</span></p>
-          <p>IP: <span id="ip">Login first.</span></p>
         </div>
       </p>
       </div>
@@ -34,7 +33,7 @@
     <button class="is-warning button field" onclick="login()">Login</button>
   </div>
   <div id="main-page" class="container is-hidden">
-    <div class="section">
+    <div>
       <div id="tabs" class="tabs">
         <ul>
           <li class="is-active"><a onclick="switchTo('Logs')">Logs</a></li>
@@ -55,7 +54,7 @@
       </div>
     </div>
   </div>
-
+  <br><br>
   <script src="/socket.io/socket.io.js"></script>
   <script src="/js/tabs.js"></script>
   <script src="/js/triggers.js"></script>
@@ -89,7 +88,6 @@
         alert("code is bad!")
       } else {
         document.getElementById("server-name").innerText = data.server.name
-        document.getElementById("ip").innerText = data.server.ip
         document.getElementById("main-page").classList.remove("is-hidden")
         document.getElementById("login-page").classList.add("is-hidden")
         socket.emit("login", code)
@@ -163,9 +161,9 @@
         document.getElementById("logs").innerHTML = `
               <br><div class="card">
                   <div class="card-content">
-                      <div class="tag is-${escapeOutput(damntriggers[trigger].type)}">${escapeOutput(damntriggers[trigger].type.toUpperCase())}</div><b> ${escapeOutput(damntriggers[trigger].name)} Trigger Hit</b><br><br>
-                      <b>Trigger Description:</b> ${escapeOutput(damntriggers[trigger].description)}<br>(id:${id})
-                      <br><b>Captured Data: </b> ${escapeOutput(data)}
+                      <div class="tag is-${escapeOutput(damntriggers[trigger].type)}">${escapeOutput(damntriggers[trigger].type.toUpperCase())}</div><b> ${escapeOutput(damntriggers[trigger].name)} Trigger Hit (${id})</b><br><br>
+                      <b>Trigger Description:</b> ${escapeOutput(damntriggers[trigger].description)}<br>
+                      <br><b>Captured Data:</b> ${escapeOutput(data)}<br><br>
                       <button onclick="deleteLog('${id}')" class="is-danger button is-small">DELETE</button>
                       </div>
               </div>

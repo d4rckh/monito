@@ -5,6 +5,6 @@ from urllib.parse import quote_plus
 
 TriggerName = "python"
 ServerHost = "localhost:3000"
-Data = "This is a test trigger coming from TriggerOnce.py :D <script>alert(1)</script>"
+Data = "This is a test trigger coming from TriggerOnce.py 😊"
 
 requests.get(f"http://{ServerHost}/api/trigger/?trigger={TriggerName}&data={quote_plus(Data)}")
