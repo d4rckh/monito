@@ -50,12 +50,13 @@ io.on('connection', (socket) => {
 app.get("/api/trigger/", (req, res) => {
     const trigger = req.query.trigger || "default"
     res.json({error: null})
+    const id = require("nanoid").nanoid(10)
     db.get("logs").push({
-        trigger
+        trigger, id
     }).write()
     loggedInClients.forEach(a => {
         a.emit("trigger", {
-            trigger
+            trigger, id
         })
     })
 })

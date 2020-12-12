@@ -1,111 +1,165 @@
 <!DOCTYPE html>
 <html>
-  <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Hello Bulma!</title>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.1/css/bulma.min.css">
-    <style>
-        .is-hidden {
-            display: none;
-        }
-        
-    </style>
-  </head>
-  <body>
-      <div class="a"></div><div class="a"></div>
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Hello Bulma!</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.1/css/bulma.min.css">
+  <style>
+    .is-hidden {
+      display: none;
+    }
+  </style>
+</head>
+
+<body>
+
   <section class="section">
     <div class="container">
       <h1 class="title">
         Monito
       </h1>
       <p class="subtitle">
-            Monitoring framework
-            <div id="serverinfo">
-              <p>Server Name: <span id="server-name"></span></p>
-              <p>IP: <span id="ip"></span></p>
-            </div>
-    </p>
-    <div class="section">
-        <div id="tabs" class="tabs">
-            <ul>
-              <li class="is-active"><a onclick="switchTo('Logs')">Logs</a></li>
-              <li><a onclick="switchTo('Triggers')">Triggers</a></li>
-              <li><a onclick="switchTo('Settings')">Settings</a></li>
-            </ul>
-          </div>
-          <div class="tab-contents Logs-tabcontents">
-            <div class="title is-4 mt-5">
-              Logs
-            </div>
-            <div id="logs">
-
-            </div>
-          </div>
-          <div id="triggers" class="tab-contents Triggers-tabcontents">
-            
-          </div>
-          <div id="settings" class="tab-contents Settings-tabcontents">
-            hi
-          </div>
-    </div>
-    </div>
+        Monitoring framework
+        <div id="serverinfo">
+          <p>Server Name: <span id="server-name">Login first.</span></p>
+          <p>IP: <span id="ip">Login first.</span></p>
+        </div>
+      </p>
+      </div>
   </section>
+  <div id="login-page" class="container form">
+    <input type="text field" name="code" id="code" class="is-warning input" placeholder="Secret Code"><br><br>
+    <button class="is-warning button field" onclick="login()">Login</button>
+  </div>
+  <div id="main-page" class="container is-hidden">
+    <div class="section">
+      <div id="tabs" class="tabs">
+        <ul>
+          <li class="is-active"><a onclick="switchTo('Logs')">Logs</a></li>
+          <li><a onclick="switchTo('Triggers')">Triggers</a></li>
+          <li><a onclick="switchTo('Settings')">Settings</a></li>
+        </ul>
+      </div>
+      <div class="tab-contents Logs-tabcontents">
+        <div class="title is-4 mt-5">
+          Logs
+        </div>
+        <div id="logs">
+
+        </div>
+      </div>
+      <div id="triggers" class="tab-contents Triggers-tabcontents">
+
+      </div>
+      <div id="settings" class="tab-contents Settings-tabcontents">
+        <div class="title is-4">
+          Plugins
+        </div>
+        <p>LOADED PLUGINS: 1 PLUGIN LOADED</p>
+        <p>- test plugin (this plugin will trigger a trigger every time you open abc.py without making any GET requests)
+        </p>
+      </div>
+    </div>
+  </div>
+
   <script src="/socket.io/socket.io.js"></script>
   <script src="/js/tabs.js"></script>
   <script src="/js/triggers.js"></script>
 
   <script>
-    
-
-    const code = prompt("Please input the secret code.")
 
     var socket = io();
 
     var damntriggers = {}
     var logs = []
+    var code
 
-    fetch("/api/info?code=" + code).then(a => a.json()).then(data => {
+    function login() {
+      code = document.getElementById("code").value
+      fetch("/api/info?code=" + code).then(a => a.json()).then(data => {
       if (data.error) {
         alert("code is bad!")
-        location.reload()
+      } else {
+        document.getElementById("server-name").innerText = data.server.name
+        document.getElementById("ip").innerText = data.server.ip
+        document.getElementById("main-page").classList.remove("is-hidden")
+        document.getElementById("login-page").classList.add("is-hidden")
+        startListening()
       }
-      document.getElementById("server-name").innerText = data.server.name
-      document.getElementById("ip").innerText = data.server.ip
-    })
+      })
+      
+    }
+
+    function startListening() {
+      
+
 
     socket.emit("login", code)
-    
+
 
     fetch("/api/triggers/?code=" + code).then(a => a.json()).then(data => {
-        console.log(data.data)
-        renderTriggers(data.data)
-        damntriggers = data.data
-    })
-    
-    socket.on("trigger", ({trigger}) => {
-        if (Object.keys(damntriggers).includes(trigger))
-        {
-            logs.push({trigger})
-            renderLogs()
-        } 
+      console.log(data.data)
+      renderTriggers(data.data)
+      damntriggers = data.data
     })
 
+    socket.on("trigger", ({
+      trigger,
+      id
+    }) => {
+      if (Object.keys(damntriggers).includes(trigger)) {
+        logs.push({
+          trigger,
+          id
+        })
+        renderLogs()
+      }
+    })
+    }
+
+    async function deleteLog(id) {
+      const req = await fetch("/api/deletelog", {
+        method: 'POST', // *GET, POST, PUT, DELETE, etc.
+        cache: 'no-cache', // *default, no-cache, reload, force-cache, only-if-cached
+        headers: {
+          'Content-Type': 'application/json'
+          // 'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        redirect: 'follow', // manual, *follow, error
+        referrerPolicy: 'no-referrer', // no-referrer, *no-referrer-when-downgrade, origin, origin-when-cross-origin, same-origin, strict-origin, strict-origin-when-cross-origin, unsafe-url
+        body: JSON.stringify({
+          id,
+          code
+        }) // body data type must match "Content-Type" header
+      })
+      const response = await req.json()
+      logs = response.data
+      renderLogs()
+
+    }
+
     function renderLogs() {
-      logs.forEach(({trigger}) => {
+      document.getElementById("logs").innerHTML = ""
+      logs.forEach(({
+        trigger,
+        id
+      }) => {
         document.getElementById("logs").innerHTML = `
               <br><div class="card">
                   <div class="card-content">
                       <div class="tag is-${damntriggers[trigger].type}">${damntriggers[trigger].type.toUpperCase()}</div><b> ${damntriggers[trigger].name} Trigger Hit</b><br><b>From IP:</b> 127.0.0.1 at 12/10/2020 4:18 PM<br>
-                      <b>Trigger Description:</b> ${damntriggers[trigger].description}
-                  </div>
+                      <b>Trigger Description:</b> ${damntriggers[trigger].description}<br>(id:${id})
+                      <button onclick="deleteLog('${id}')" class="is-danger button is-small">DELETE</button>
+                      </div>
               </div>
               ${document.getElementById("logs").innerHTML}
               `
       })
     }
-
   </script>
 
-  </body>
+</body>
+
 </html>

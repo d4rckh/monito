@@ -6,27 +6,12 @@
     "installed": true,
     "code": "10"
   },
-  "logs": [
-    {
-      "trigger": "Trigger0"
-    },
-    {
-      "trigger": "newShell"
-    },
-    {
-      "trigger": "newFlag"
-    }
-  ],
+  "logs": [],
   "triggers": {
-    "newShell": {
-      "name": "New Shell",
-      "description": "Someone has popped a new shell!",
+    "python": {
+      "name": "python",
+      "description": "python",
       "type": "warning"
-    },
-    "newFlag": {
-      "name": "New Flag",
-      "description": "Someone submitted a new flag!",
-      "type": "success"
     }
   }
 }

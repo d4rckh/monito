@@ -37,4 +37,15 @@ router.get("/api/info", (req, res) => {
     })
 })
 
+router.post("/api/deletelog", (req, res) => {
+    db.get('logs')
+  .remove({ id: req.body.id })
+  .write()
+
+    res.send({
+        error: null,
+        data: db.get('logs').value()
+    })  
+})
+
 module.exports = router
