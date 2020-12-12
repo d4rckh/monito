@@ -32,6 +32,13 @@ app.post("/api/install", (req, res) => {
 
 })
 
+app.get("/api/isinstalled", (req, res) => {
+    res.json({
+        data: db.get("settings.installed").value(),
+        error: null
+    })
+})
+
 app.use(express.static("public"))
 
 
@@ -39,8 +46,11 @@ io.on('connection', (socket) => {
   console.log('a user connected');
   socket.on("login", (data) => {
     if (data == db.get("settings.code").value()) {
-        db.get("logs").value().forEach(log => {
-            socket.emit("trigger", log)
+        socket.on("sendAllLogs", () => {
+            db.get("logs").value().forEach(log => {
+                console.log(log)
+                socket.emit("trigger", log)
+            })
         })
         loggedInClients.push(socket)
     }
@@ -49,14 +59,15 @@ io.on('connection', (socket) => {
 
 app.get("/api/trigger/", (req, res) => {
     const trigger = req.query.trigger || "default"
+    const data = req.query.data || "No data sent by trigger."
     res.json({error: null})
     const id = require("nanoid").nanoid(10)
     db.get("logs").push({
-        trigger, id
+        trigger, id, data
     }).write()
     loggedInClients.forEach(a => {
         a.emit("trigger", {
-            trigger, id
+            trigger, id, data
         })
     })
 })

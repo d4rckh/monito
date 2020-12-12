@@ -53,14 +53,6 @@
       <div id="triggers" class="tab-contents Triggers-tabcontents">
 
       </div>
-      <div id="settings" class="tab-contents Settings-tabcontents">
-        <div class="title is-4">
-          Plugins
-        </div>
-        <p>LOADED PLUGINS: 1 PLUGIN LOADED</p>
-        <p>- test plugin (this plugin will trigger a trigger every time you open abc.py without making any GET requests)
-        </p>
-      </div>
     </div>
   </div>
 
@@ -69,12 +61,26 @@
   <script src="/js/triggers.js"></script>
 
   <script>
+    function escapeOutput(toOutput){
+        return toOutput.replace(/\&/g, '&amp;')
+            .replace(/\</g, '&lt;')
+            .replace(/\>/g, '&gt;')
+            .replace(/\"/g, '&quot;')
+            .replace(/\'/g, '&#x27')
+            .replace(/\//g, '&#x2F');
+    }
 
     var socket = io();
 
     var damntriggers = {}
     var logs = []
     var code
+
+    fetch("/api/isinstalled").then( a => a.json() ).then(({data}) => {
+      if (!data) {
+        document.location = "/setup.html"
+      }
+    })
 
     function login() {
       code = document.getElementById("code").value
@@ -86,7 +92,10 @@
         document.getElementById("ip").innerText = data.server.ip
         document.getElementById("main-page").classList.remove("is-hidden")
         document.getElementById("login-page").classList.add("is-hidden")
+        socket.emit("login", code)
+        renderLogs()
         startListening()
+
       }
       })
       
@@ -96,24 +105,28 @@
       
 
 
-    socket.emit("login", code)
 
 
     fetch("/api/triggers/?code=" + code).then(a => a.json()).then(data => {
       console.log(data.data)
       renderTriggers(data.data)
       damntriggers = data.data
+      socket.emit("sendAllLogs")
     })
 
     socket.on("trigger", ({
       trigger,
-      id
+      id,
+      data
     }) => {
       if (Object.keys(damntriggers).includes(trigger)) {
         logs.push({
           trigger,
-          id
+          id,
+          data
         })
+        
+        console.log(id)
         renderLogs()
       }
     })
@@ -144,13 +157,15 @@
       document.getElementById("logs").innerHTML = ""
       logs.forEach(({
         trigger,
-        id
+        id,
+        data
       }) => {
         document.getElementById("logs").innerHTML = `
               <br><div class="card">
                   <div class="card-content">
-                      <div class="tag is-${damntriggers[trigger].type}">${damntriggers[trigger].type.toUpperCase()}</div><b> ${damntriggers[trigger].name} Trigger Hit</b><br><b>From IP:</b> 127.0.0.1 at 12/10/2020 4:18 PM<br>
-                      <b>Trigger Description:</b> ${damntriggers[trigger].description}<br>(id:${id})
+                      <div class="tag is-${escapeOutput(damntriggers[trigger].type)}">${escapeOutput(damntriggers[trigger].type.toUpperCase())}</div><b> ${escapeOutput(damntriggers[trigger].name)} Trigger Hit</b><br><br>
+                      <b>Trigger Description:</b> ${escapeOutput(damntriggers[trigger].description)}<br>(id:${id})
+                      <br><b>Captured Data: </b> ${escapeOutput(data)}
                       <button onclick="deleteLog('${id}')" class="is-danger button is-small">DELETE</button>
                       </div>
               </div>
