@@ -10,6 +10,18 @@
     .is-hidden {
       display: none;
     }
+
+    .log-card {
+      transition-duration: 300ms;
+      bottom: 0px;
+    }
+
+    .log-card:hover {
+      -webkit-box-shadow: 9px 10px 118px -37px rgba(0,0,0,0.75);
+      -moz-box-shadow: 9px 10px 118px -37px rgba(0,0,0,0.75);
+      box-shadow: 9px 10px 118px -37px rgba(0,0,0,0.75);
+      bottom: 10px;
+    }
   </style>
 </head>
 
@@ -60,21 +72,21 @@
         </div>
         <button id="EnableCompactMode" class="button is-success" onclick="ToggleCompactMode()">Enable Compact Mode</button>
         <div id="logs">
-
         </div>
       </div>
       <div id="triggers" class="tab-contents Triggers-tabcontents">
-        
       </div>
       <div id="settings" class="tab-contents Settings-tabcontents">
         <header class="title is-3">Extensions</header>
         <div id="extensions-list">
-
         </div>
       </div>
     </div>
   </div>
   <br><br>
+
+  <script defer src="https://use.fontawesome.com/releases/v5.14.0/js/all.js"></script>
+
   <script src="/socket.io/socket.io.js"></script>
   <script src="/js/modallib.js"></script>
   <script src="/js/tabs.js"></script>
@@ -92,11 +104,11 @@
 
     var socket = io();
 
-    var damntriggers = {}
-    var logs = []
-    var code
+    var damntriggers = {};
+    var logs = [];
+    var code;
 
-    var compactMode = false
+    var compactMode = false;
 
     function ToggleCompactMode() {
       compactMode = !compactMode
@@ -104,26 +116,21 @@
       else document.getElementById("EnableCompactMode").innerText = `Enable Compact Mode`
       renderLogs(compactMode)
     }
-
     fetch("/api/isinstalled").then( a => a.json() ).then(({data}) => {
       if (!data) {
         document.location = "/setup.html"
       }
     })
-
     function login() {
       code = document.getElementById("code").value
       fetch("/api/info?code=" + code).then(a => a.json()).then(data => {
       if (data.error) {
         alert("code is bad!")
       } else {
-
-        fetch("/api/extensions?code=" + code).then(a => a.json()).then(({data}) => {
+       fetch("/api/extensions?code=" + code).then(a => a.json()).then(({data}) => {
           data.forEach(ext => {
             document.getElementById("extensions-list").innerHTML += `
-
             - ${ext.name}: ${ext.description} (author: ${ext.author})<br>
-          
           `
           })
         })
@@ -139,7 +146,6 @@
       })
       
     }
-
     function startListening() {
       fetch("/api/triggers/?code=" + code).then(a => a.json()).then(data => {
         console.log(data.data)
@@ -165,7 +171,6 @@
         }
       })
     }
-
     async function deleteLog(id) {
       const req = await fetch("/api/deletelog", {
         method: 'POST', // *GET, POST, PUT, DELETE, etc.
@@ -186,32 +191,73 @@
       renderLogs(compactMode) 
 
     }
-
     function info(trigger) {
       (new Modal("Trigger Information - " + trigger, damntriggers[trigger].description)).show()
     }
-
     function renderLogs(compactMode) {
       if (!compactMode) {
         document.getElementById("logs").innerHTML = ""
-        
         logs.forEach(({
           trigger,
           id,
           data
         }) => {
-          document.getElementById("logs").innerHTML = `
+          /*
                 <br><div class="card">
-                    <div class="card-content">
-                        <div class="tag is-${escapeOutput(damntriggers[trigger].type)}">${escapeOutput(damntriggers[trigger].type.toUpperCase())}</div><b> ${escapeOutput(damntriggers[trigger].name)} Trigger Hit (${id})</b><br><br>
+                  <header class="card-header">
+                    <div class="card-header-title">
+                      <div class="pr-1">
+                        <b>${escapeOutput(damntriggers[trigger].name)} Trigger Hit (${id})</b>  
+                      </div>
+                      <div class="tag is-${escapeOutput(damntriggers[trigger].type)}">${escapeOutput(damntriggers[trigger].type.toUpperCase())}</div
+                      </div>
+                      <a href="#" class="card-header-icon" aria-label="more options">
+                      <span class="icon">
+                        <i class="fas fa-angle-down" aria-hidden="true"></i>
+                      </span>
+                    </a>
+                  </header>
+                  <div class="card-content">
                         <b>Trigger Description:</b> ${escapeOutput(damntriggers[trigger].description)}<br>
                         <br><b>Captured Data:</b> ${escapeOutput(data)}<br><br>
                         <button onclick="deleteLog('${id}')" class="is-danger button is-small">DELETE</button>
                         </div>
                 </div>
                 ${document.getElementById("logs").innerHTML}
-                ` 
-          
+                ` */
+                document.getElementById("logs").innerHTML += `
+<br>
+<div class="card log-card" style="border: 3px solid ${
+
+  {
+    "danger": "red",
+    "success": "green",
+    "info": "blue",
+    "warning": "yellow"
+  }[damntriggers[trigger].type]
+  
+}">
+  <header class="card-header">
+    <p class="card-header-title">
+      ${escapeOutput(damntriggers[trigger].name)} Trigger Hit (${id})
+    </p>
+    <a href="#" class="card-header-icon" aria-label="more options" onclick="deleteLog('${id}')">
+      <span class="icon has-text-danger">
+        <i class="fas fa-times" aria-hidden="true"></i>
+      </span>
+    </a>
+  </header>
+  <div class="card-content">
+    <div class="content">
+
+                        <b>Trigger Description:</b> ${escapeOutput(damntriggers[trigger].description)}<br>
+                        <br><b>Captured Data:</b> ${escapeOutput(data)}
+
+    </div>
+  </div>
+</div>
+                
+                `
         })
       } else {
         document.getElementById("logs").innerHTML = `<br><br>
@@ -240,16 +286,11 @@
       })
       return tbody
     })()}
-
     </tbody>
     </table>
         `
-
-
       }
     }
   </script>
-
 </body>
-
 </html>
