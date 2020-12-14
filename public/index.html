@@ -14,7 +14,20 @@
 </head>
 
 <body>
-
+  <div class="modal" id="generalModal">
+    <div class="modal-background"></div>
+    <div class="modal-card">
+      <header class="modal-card-head">
+        <p class="modal-card-title" id="generalModal-title">Trigger Information</p>
+      </header>
+      <section class="modal-card-body" id="generalModal-description">
+      </section>
+      <footer class="modal-card-foot">
+        <button class="button is-success" onclick="closeModal()">Close</button>
+      </footer>
+    </div>
+  </div>
+  
   <section class="section">
     <div class="container">
       <h1 class="title">
@@ -45,17 +58,25 @@
         <div class="title is-4 mt-5">
           Logs
         </div>
+        <button id="EnableCompactMode" class="button is-success" onclick="ToggleCompactMode()">Enable Compact Mode</button>
         <div id="logs">
 
         </div>
       </div>
       <div id="triggers" class="tab-contents Triggers-tabcontents">
+        
+      </div>
+      <div id="settings" class="settings-contents Settings-tabcontents">
+        <header class="title is-3">Extensions</header>
+        <div id="extensions-list">
 
+        </div>
       </div>
     </div>
   </div>
   <br><br>
   <script src="/socket.io/socket.io.js"></script>
+  <script src="/js/modallib.js"></script>
   <script src="/js/tabs.js"></script>
   <script src="/js/triggers.js"></script>
 
@@ -75,6 +96,15 @@
     var logs = []
     var code
 
+    var compactMode = false
+
+    function ToggleCompactMode() {
+      compactMode = !compactMode
+      if (compactMode) document.getElementById("EnableCompactMode").innerText = `Disable Compact Mode`
+      else document.getElementById("EnableCompactMode").innerText = `Enable Compact Mode`
+      renderLogs(compactMode)
+    }
+
     fetch("/api/isinstalled").then( a => a.json() ).then(({data}) => {
       if (!data) {
         document.location = "/setup.html"
@@ -87,11 +117,22 @@
       if (data.error) {
         alert("code is bad!")
       } else {
+
+        fetch("/api/extensions?code=" + code).then(a => a.json()).then(({data}) => {
+          data.forEach(ext => {
+            document.getElementById("extensions-list").innerHTML += `
+
+            - ${ext.name}: ${ext.description} (author: ${ext.author})<br>
+          
+          `
+          })
+        })
+
         document.getElementById("server-name").innerText = data.server.name
         document.getElementById("main-page").classList.remove("is-hidden")
         document.getElementById("login-page").classList.add("is-hidden")
         socket.emit("login", code)
-        renderLogs()
+        renderLogs(compactMode)
         startListening()
 
       }
@@ -100,34 +141,29 @@
     }
 
     function startListening() {
-      
+      fetch("/api/triggers/?code=" + code).then(a => a.json()).then(data => {
+        console.log(data.data)
+        renderTriggers(data.data)
+        damntriggers = data.data
+        socket.emit("sendAllLogs")
+      })
 
-
-
-
-    fetch("/api/triggers/?code=" + code).then(a => a.json()).then(data => {
-      console.log(data.data)
-      renderTriggers(data.data)
-      damntriggers = data.data
-      socket.emit("sendAllLogs")
-    })
-
-    socket.on("trigger", ({
-      trigger,
-      id,
-      data
-    }) => {
-      if (Object.keys(damntriggers).includes(trigger)) {
-        logs.push({
-          trigger,
-          id,
-          data
-        })
-        
-        console.log(id)
-        renderLogs()
-      }
-    })
+      socket.on("trigger", ({
+        trigger,
+        id,
+        data
+      }) => {
+        if (Object.keys(damntriggers).includes(trigger)) {
+          logs.push({
+            trigger,
+            id,
+            data
+          })
+          
+          console.log(id)
+          renderLogs(compactMode)
+        }
+      })
     }
 
     async function deleteLog(id) {
@@ -147,29 +183,70 @@
       })
       const response = await req.json()
       logs = response.data
-      renderLogs()
+      renderLogs(compactMode) 
 
     }
 
-    function renderLogs() {
-      document.getElementById("logs").innerHTML = ""
-      logs.forEach(({
-        trigger,
-        id,
-        data
-      }) => {
-        document.getElementById("logs").innerHTML = `
-              <br><div class="card">
-                  <div class="card-content">
-                      <div class="tag is-${escapeOutput(damntriggers[trigger].type)}">${escapeOutput(damntriggers[trigger].type.toUpperCase())}</div><b> ${escapeOutput(damntriggers[trigger].name)} Trigger Hit (${id})</b><br><br>
-                      <b>Trigger Description:</b> ${escapeOutput(damntriggers[trigger].description)}<br>
-                      <br><b>Captured Data:</b> ${escapeOutput(data)}<br><br>
-                      <button onclick="deleteLog('${id}')" class="is-danger button is-small">DELETE</button>
-                      </div>
-              </div>
-              ${document.getElementById("logs").innerHTML}
-              `
+    function info(trigger) {
+      (new Modal("Trigger Information - " + trigger, damntriggers[trigger].description)).show()
+    }
+
+    function renderLogs(compactMode) {
+      if (!compactMode) {
+        document.getElementById("logs").innerHTML = ""
+        
+        logs.forEach(({
+          trigger,
+          id,
+          data
+        }) => {
+          document.getElementById("logs").innerHTML = `
+                <br><div class="card">
+                    <div class="card-content">
+                        <div class="tag is-${escapeOutput(damntriggers[trigger].type)}">${escapeOutput(damntriggers[trigger].type.toUpperCase())}</div><b> ${escapeOutput(damntriggers[trigger].name)} Trigger Hit (${id})</b><br><br>
+                        <b>Trigger Description:</b> ${escapeOutput(damntriggers[trigger].description)}<br>
+                        <br><b>Captured Data:</b> ${escapeOutput(data)}<br><br>
+                        <button onclick="deleteLog('${id}')" class="is-danger button is-small">DELETE</button>
+                        </div>
+                </div>
+                ${document.getElementById("logs").innerHTML}
+                ` 
+          
+        })
+      } else {
+        document.getElementById("logs").innerHTML = `<br><br>
+        <table class="table">
+  <thead>
+    <tr>
+      <th>Trigger</th>
+      <th>Data</th>
+      <th>Controls</th>
+    </tr>
+  </thead>
+  <tbody>
+    ${(() => {
+      var tbody = ``
+      logs.forEach(({trigger,id,data}) => {
+        tbody += `
+        <tr>
+          <th>${escapeOutput(trigger)} <span class="has-text-${escapeOutput(damntriggers[trigger].type)}">${escapeOutput(damntriggers[trigger].type).toUpperCase()}</span></th>
+          <td>${escapeOutput(data)}</td>
+          <td>
+            <button class="is-small button is-danger" onclick="deleteLog('${id}')">X</button>
+            <button class="is-small button is-info" onclick="info('${trigger}')">i</button>
+          </td>
+        </tr>
+        `
       })
+      return tbody
+    })()}
+
+    </tbody>
+    </table>
+        `
+
+
+      }
     }
   </script>
 

@@ -2,21 +2,14 @@ const { nanoid } = require("nanoid")
 const low = require('lowdb')
 const FileSync = require('lowdb/adapters/FileSync')
 
-const adapter = new FileSync('db.json')
-const db = low(adapter)
 
-// Set some defaults (required if your JSON file is empty)
-db.defaults({ 
-    settings: {
-        server: {
-            name: "Untitled Monito Server"
-        },
-        installed: false,
-        code: ""
-    },
-    logs: [],
-    triggers: []
- })
-  .write()
+module.exports = (schema) => {
+    
+    const adapter = new FileSync('db.json')
+    const db = low(adapter)
 
-module.exports = db
+    db.defaults(schema)
+        .write(); 
+    
+    return db
+}
