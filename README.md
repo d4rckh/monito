@@ -2,6 +2,12 @@
 
 This project helps you gather your logs in one place.
 
+# Features
+- Triggers
+- Extensions (undocumented)
+- Compact mode
+- ...and more
+
 # Tutorial
 
 1. [Installation Guide](https://github.com/d4rckh/monito/wiki/1.-Downloading-and-Installing-Monito)
