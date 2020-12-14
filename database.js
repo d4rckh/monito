@@ -1,7 +1,5 @@
-const { nanoid } = require("nanoid")
 const low = require('lowdb')
 const FileSync = require('lowdb/adapters/FileSync')
-
 
 module.exports = (schema) => {
     

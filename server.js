@@ -19,10 +19,6 @@ class Monito extends EventEmitter {
             logs: [],
             triggers: []
          }
-
-
-
-  
     }
 
     init() {
@@ -40,22 +36,22 @@ class Monito extends EventEmitter {
         this.app.use(bodyParser.urlencoded({ extended: true }));
         this.app.use(bodyParser.json());
 
-        return this
 
-    }
-
-    loadRoutes() {
-        
         this.on("newTrigger", ({
             trigger, id, data
         }) => {
- 
             this.loggedInClients.forEach(a => {
                 a.emit("trigger", {
                     trigger, id, data
                 })
             })
         })
+
+        return this
+
+    }
+
+    loadRoutes() {
 
         this.app.get("/", (req, res) => {
             console.log("hi")
@@ -119,7 +115,6 @@ class Monito extends EventEmitter {
 
         this.app.use("/", require("./routes/restricted.js")(this))
 
-
         return this
     }
 
@@ -142,7 +137,6 @@ class Monito extends EventEmitter {
         this.http.listen(3000, () => {
             console.log('listening on *:3000');
         });
-        
     }
 
 }
