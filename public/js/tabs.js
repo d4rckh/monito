@@ -1,17 +1,13 @@
-const tabs = document.getElementById("tabs");
-const lis = tabs.children[0].children
-const tabContents = document.getElementsByClassName("tab-contents")
-
-function resetIsActive() {
-    Array.from(lis).forEach(li => li.classList.remove("is-active"))
-    Array.from(tabContents).forEach(li => li.classList.add("is-hidden"))
-}
-
-function switchTo(what) {
-    resetIsActive()
-    const li = Array.from(lis).filter(a => a.children[0].innerHTML == what)[0]
-    li.classList.add("is-active")
-    document.getElementsByClassName(li.children[0].innerHTML + "-tabcontents")[0].classList.remove("is-hidden")
-}
-
-switchTo("Logs")
+function openCity(evt, cityName) {
+    var i, tabcontent, tablinks;
+    tabcontent = document.getElementsByClassName("tabcontent");
+    for (i = 0; i < tabcontent.length; i++) {
+      tabcontent[i].style.display = "none";
+    }
+    tablinks = document.getElementsByClassName("tablinks");
+    for (i = 0; i < tablinks.length; i++) {
+      tablinks[i].className = tablinks[i].className.replace(" active", "");
+    }
+    document.getElementById(cityName).style.display = "block";
+    evt.currentTarget.className += " active";
+  }
