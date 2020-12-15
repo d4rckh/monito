@@ -1,3 +1,6 @@
+![MainPage](/screenshots/art/cover.png?raw=true "Cover")
+
+
 # Monito
 
 This project helps you gather your logs in one place.
