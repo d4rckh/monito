@@ -27,7 +27,7 @@
     transition: 0.3s;
     font-size: 17px;
     /* color: white; */
-    border-bottom: 5px solid #7DE38D;
+    border-bottom: 5px solid black;
   }
 
   /* Change background color of buttons on hover */
@@ -38,7 +38,7 @@
 
   /* Create an active/current tablink class */
   .tab button.active {
-    background-color: #7DE38D;
+    background-color: black;
     color: white
   }
 
@@ -152,7 +152,7 @@ style="border: 6px solid ${
         <div class="title is-4 mt-5">
           Logs
         </div>
-        <button id="EnableCompactMode" class="button is-success" onclick="ToggleCompactMode()">Enable Compact Mode</button>
+        <button id="EnableCompactMode" class="button is-dark" onclick="ToggleCompactMode()">Enable Compact Mode</button>
         <div id="logs">
         </div>
       </div>
@@ -351,7 +351,7 @@ style="border: 6px solid ${
   <tbody>
     ${(() => {
       var tbody = ``
-      logs.forEach(({trigger,id,data}) => {
+      logs.filter(a => damntriggers[a.trigger]).forEach(({trigger,id,data}) => {
         tbody += `
         <tr>
           <th>${escapeOutput(trigger)} <span class="has-text-${escapeOutput(damntriggers[trigger].type)}">${escapeOutput(damntriggers[trigger].type).toUpperCase()}</span></th>
