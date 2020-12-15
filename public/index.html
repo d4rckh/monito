@@ -89,6 +89,7 @@
 
   <script src="/socket.io/socket.io.js"></script>
   <script src="/js/modallib.js"></script>
+  <script src="/js/notifications.js"></script>
   <script src="/js/tabs.js"></script>
   <script src="/js/triggers.js"></script>
 
@@ -157,7 +158,8 @@
       socket.on("trigger", ({
         trigger,
         id,
-        data
+        data,
+        isRestoreTrigger
       }) => {
         if (Object.keys(damntriggers).includes(trigger)) {
           logs.push({
@@ -166,7 +168,9 @@
             data
           })
           
-          console.log(id)
+          if (!isRestoreTrigger) notifyMe(trigger + " triggered!", {
+            body: data
+          })
           renderLogs(compactMode)
         }
       })

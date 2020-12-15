@@ -42,7 +42,7 @@ class Monito extends EventEmitter {
         }) => {
             this.loggedInClients.forEach(a => {
                 a.emit("trigger", {
-                    trigger, id, data
+                    trigger, id, data, isRestoreTrigger: false
                 })
             })
         })
@@ -92,7 +92,7 @@ class Monito extends EventEmitter {
                 socket.on("sendAllLogs", () => {
                     this.db.get("logs").value().forEach(log => {
                         console.log(log)
-                        socket.emit("trigger", log)
+                        socket.emit("trigger", {...log, isRestoreTrigger: true})
                     })
                 })
                 this.loggedInClients.push(socket)
