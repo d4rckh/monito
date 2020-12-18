@@ -1,9 +1,6 @@
 module.exports = class hi {
     constructor(c) {
-
-        this.info = {
-            
-        }
+        this.info = {}
 
         this.info.name = "ConsoleLogger"
         this.info.description = "This plugin will console log when there are new triggers triggered."

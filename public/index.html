@@ -7,44 +7,41 @@
   <title>Hello Bulma!</title>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.1/css/bulma.min.css">
   <style>
+    /* Style the tab */
+    .tab {
+      overflow: hidden;
+      color: white
+    }
 
+    /* Style the buttons inside the tab */
+    .tab button {
+      background-color: inherit;
+      float: left;
+      border: none;
+      outline: none;
+      cursor: pointer;
+      padding: 14px 16px;
+      transition: 0.3s;
+      font-size: 17px;
+      /* color: white; */
+      border-bottom: 5px solid black;
+    }
 
-      
-  /* Style the tab */
-  .tab {
-    overflow: hidden;
-    color: white
-  }
+    /* Change background color of buttons on hover */
+    .tab button:hover {
+      background-color: #ddd;
+      color: black
+    }
 
-  /* Style the buttons inside the tab */
-  .tab button {
-    background-color: inherit;
-    float: left;
-    border: none;
-    outline: none;
-    cursor: pointer;
-    padding: 14px 16px;
-    transition: 0.3s;
-    font-size: 17px;
-    /* color: white; */
-    border-bottom: 5px solid black;
-  }
-
-  /* Change background color of buttons on hover */
-  .tab button:hover {
-    background-color: #ddd;
-    color: black
-  }
-
-  /* Create an active/current tablink class */
-  .tab button.active {
-    background-color: black;
-    color: white
-  }
+    /* Create an active/current tablink class */
+    .tab button.active {
+      background-color: black;
+      color: white
+    }
 
 
     body {
-/*      background-color: #00242B;
+      /*      background-color: #00242B;
       color: white;*/
     }
 
@@ -101,9 +98,9 @@ style="border: 6px solid ${
     */
 
     .log-card:hover {
-      -webkit-box-shadow: 9px 10px 118px -37px rgba(0,0,0,0.75);
-      -moz-box-shadow: 9px 10px 118px -37px rgba(0,0,0,0.75);
-      box-shadow: 9px 10px 118px -37px rgba(0,0,0,0.75);
+      -webkit-box-shadow: 9px 10px 118px -37px rgba(0, 0, 0, 0.75);
+      -moz-box-shadow: 9px 10px 118px -37px rgba(0, 0, 0, 0.75);
+      box-shadow: 9px 10px 118px -37px rgba(0, 0, 0, 0.75);
       bottom: 10px;
     }
   </style>
@@ -123,30 +120,33 @@ style="border: 6px solid ${
       </footer>
     </div>
   </div>
-  
+
   <section class="section">
     <div class="container">
       <h1 class="title">
-        <img src="/img/cover.png" style="height: 250px; display: block; margin-left: auto; margin-right: auto; width: 50%;" alt="">
-        
+        <img src="/img/cover.png"
+          style="height: 250px; display: block; margin-left: auto; margin-right: auto; width: 50%;" alt="">
+
       </h1>
       <p class="subtitle">
         <div id="serverinfo" style="text-align: center;">
           <p>Server Name: <span id="server-name">Login first.</span></p>
         </div>
       </p>
-      </div>
+    </div>
   </section>
   <div id="login-page" class="container form">
     <input type="text field" name="code" id="code" class="is-warning input" placeholder="Secret Code"><br><br>
-    <button class="is-warning button field" onclick="login()">Login</button>
+    <button class="is-warning button field" onclick="login()">Login</button><br>
+    <small><b>Note: website might freeze for few seconds after logging in, be aware.</b></small>
   </div>
   <div id="main-page" class="container is-hidden">
     <div>
       <div class="tab">
-        <button class="tablinks" onclick="openCity(event, 'Logs')">Logs</button>
-        <button class="tablinks" onclick="openCity(event, 'Triggers')">Triggers</button>
-        <button class="tablinks" onclick="openCity(event, 'Settings')">Settings</button>
+        <button class="tablinks" onclick="openCity('Logs')" id="Tab-LogsButton">Logs</button>
+        <button class="tablinks" onclick="openCity('Triggers')" id="Tab-TriggersButton">Triggers</button>
+        <button class="tablinks" onclick="openCity('Stats')" id="Tab-StatsButton">Stats</button>
+        <button class="tablinks" onclick="openCity('Settings')" id="Tab-SettingsButton">Settings</button>
       </div>
       <div id="Logs" class="tabcontent">
         <div class="title is-4 mt-5">
@@ -164,9 +164,23 @@ style="border: 6px solid ${
         </div>
       </div>
     </div>
+
+    <div id="Stats" class="tabcontent">
+      <div class="title is-4 mt-5">
+        Stats
+      </div>
+      <div id="stats">
+        <canvas id="myChart" width="400" height="400"></canvas>
+        <canvas id="myChart2" width="400" height="400"></canvas>
+      </div>
+    </div>
   </div>
+
   <br><br>
 
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.4/Chart.min.js"
+    integrity="sha512-d9xgZrVZpmmQlfonhQUvTR7lMPtO7NkZMkA0ABN3PHCbKA5nqylQ/yWlFAyY6hYgdF1Qh6nYiuADWwKB4C2WSw=="
+    crossorigin="anonymous"></script>
   <script defer src="https://use.fontawesome.com/releases/v5.14.0/js/all.js"></script>
 
   <script src="/socket.io/socket.io.js"></script>
@@ -176,13 +190,13 @@ style="border: 6px solid ${
   <script src="/js/triggers.js"></script>
 
   <script>
-    function escapeOutput(toOutput){
-        return toOutput.replace(/\&/g, '&amp;')
-            .replace(/\</g, '&lt;')
-            .replace(/\>/g, '&gt;')
-            .replace(/\"/g, '&quot;')
-            .replace(/\'/g, '&#x27')
-            .replace(/\//g, '&#x2F');
+    function escapeOutput(toOutput) {
+      return toOutput.replace(/\&/g, '&amp;')
+        .replace(/\</g, '&lt;')
+        .replace(/\>/g, '&gt;')
+        .replace(/\"/g, '&quot;')
+        .replace(/\'/g, '&#x27')
+        .replace(/\//g, '&#x2F');
     }
 
     var socket = io();
@@ -199,36 +213,42 @@ style="border: 6px solid ${
       else document.getElementById("EnableCompactMode").innerText = `Enable Compact Mode`
       renderLogs(compactMode)
     }
-    fetch("/api/isinstalled").then( a => a.json() ).then(({data}) => {
+    fetch("/api/isinstalled").then(a => a.json()).then(({
+      data
+    }) => {
       if (!data) {
         document.location = "/setup.html"
       }
     })
+
     function login() {
       code = document.getElementById("code").value
       fetch("/api/info?code=" + code).then(a => a.json()).then(data => {
-      if (data.error) {
-        alert("code is bad!")
-      } else {
-       fetch("/api/extensions?code=" + code).then(a => a.json()).then(({data}) => {
-          data.forEach(ext => {
-            document.getElementById("extensions-list").innerHTML += `
+        if (data.error) {
+          alert("code is bad!")
+        } else {
+          fetch("/api/extensions?code=" + code).then(a => a.json()).then(({
+            data
+          }) => {
+            data.forEach(ext => {
+              document.getElementById("extensions-list").innerHTML += `
             - ${ext.name}: ${ext.description} (author: ${ext.author})<br>
           `
+            })
           })
-        })
 
-        document.getElementById("server-name").innerText = data.server.name
-        document.getElementById("main-page").classList.remove("is-hidden")
-        document.getElementById("login-page").classList.add("is-hidden")
-        socket.emit("login", code)
-        renderLogs(compactMode)
-        startListening()
+          document.getElementById("server-name").innerText = data.server.name
+          document.getElementById("main-page").classList.remove("is-hidden")
+          document.getElementById("login-page").classList.add("is-hidden")
+          socket.emit("login", code)
+          renderLogs(compactMode)
+          startListening()
 
-      }
+        }
       })
-      
+
     }
+
     function startListening() {
       fetch("/api/triggers/?code=" + code).then(a => a.json()).then(data => {
         console.log(data.data)
@@ -237,26 +257,31 @@ style="border: 6px solid ${
         socket.emit("sendAllLogs")
       })
 
-      socket.on("trigger", ({
-        trigger,
-        id,
-        data,
-        isRestoreTrigger
-      }) => {
-        if (Object.keys(damntriggers).includes(trigger)) {
-          logs.push({
-            trigger,
-            id,
-            data
-          })
-          
-          if (!isRestoreTrigger) notifyMe(trigger + " triggered!", {
-            body: data,
-            icon: "./img/profile.png",
-            //image: "./img/cover.png"
-          })
-          renderLogs(compactMode)
-        }
+      socket.on("trigger", (c) => {
+        c.forEach(({
+          trigger,
+          id,
+          data,
+          isRestoreTrigger
+        }) => {
+          if (Object.keys(damntriggers).includes(trigger)) {
+            logs.push({
+              trigger,
+              id,
+              data
+            })
+            if (!isRestoreTrigger) add1ToDataRecevied()
+            if (!isRestoreTrigger) notifyMe(trigger + " triggered!", {
+              body: data,
+              icon: "./img/profile.png",
+              //image: "./img/cover.png"
+            })
+            renderLogs(compactMode)
+          }
+        })
+        
+      calculateData()
+      updateGraph()
       })
     }
     async function deleteLog(id) {
@@ -276,12 +301,16 @@ style="border: 6px solid ${
       })
       const response = await req.json()
       logs = response.data
-      renderLogs(compactMode) 
+      renderLogs(compactMode)
+      calculateData()
+      updateGraph()
 
     }
+
     function info(trigger) {
       (new Modal("Trigger Information - " + trigger, damntriggers[trigger].description)).show()
     }
+
     function renderLogs(compactMode) {
       if (!compactMode) {
         document.getElementById("logs").innerHTML = ""
@@ -313,7 +342,7 @@ style="border: 6px solid ${
                 </div>
                 ${document.getElementById("logs").innerHTML}
                 ` */
-                document.getElementById("logs").innerHTML += `
+          document.getElementById("logs").innerHTML += `
 <br>
 <div class="card log-card log-card-color-${damntriggers[trigger].type}" >
   <header class="card-header">
@@ -352,15 +381,18 @@ style="border: 6px solid ${
     ${(() => {
       var tbody = ``
       logs.filter(a => damntriggers[a.trigger]).forEach(({trigger,id,data}) => {
-        tbody += `
-        <tr>
-          <th>${escapeOutput(trigger)} <span class="has-text-${escapeOutput(damntriggers[trigger].type)}">${escapeOutput(damntriggers[trigger].type).toUpperCase()}</span></th>
-          <td>${escapeOutput(data)}</td>
-          <td>
-            <button class="is-small button is-danger" onclick="deleteLog('${id}')">X</button>
-            <button class="is-small button is-info" onclick="info('${trigger}')">i</button>
-          </td>
-        </tr>
+        tbody += ` <tr>
+          <th> ${
+            escapeOutput(trigger)
+          } <span class="has-text-${escapeOutput(damntriggers[trigger].type)}" > ${
+            escapeOutput(damntriggers[trigger].type).toUpperCase()
+          } </span></th>
+          <td> ${
+            escapeOutput(data)
+          } </td> <td>
+          <button class="is-small button is-danger"
+        onclick="deleteLog('${id}')"> X </button> <button class="is-small button is-info"
+        onclick="info('${trigger}')"> i </button> </td> </tr>
         `
       })
       return tbody
@@ -371,5 +403,8 @@ style="border: 6px solid ${
       }
     }
   </script>
+  <script src="/js/charts.js"></script>
+
 </body>
+
 </html>
