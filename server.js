@@ -38,11 +38,11 @@ class Monito extends EventEmitter {
 
 
         this.on("newTrigger", ({
-            trigger, id, data
+            trigger, id, data, at
         }) => {
             this.loggedInClients.forEach(a => {
                 a.emit("trigger", [{
-                    trigger, id, data, isRestoreTrigger: false
+                    trigger, id, data, isRestoreTrigger: false, at
                 }])
             })
         })
@@ -111,10 +111,10 @@ class Monito extends EventEmitter {
             res.json({error: null})
             const id = require("nanoid").nanoid(10)
             this.db.get("logs").push({
-                trigger, id, data
+                trigger, id, data, at: new Date().getTime()
             }).write()
             this.emit("newTrigger", {
-                trigger, id, data
+                trigger, id, data, at: new Date().getTime()
             })
         })
 

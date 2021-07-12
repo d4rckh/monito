@@ -67,6 +67,11 @@
       background-color: #e37d7d;
     }
 
+    .log-card-color-unknown {
+      border: 6px solid #a0a0a0;
+      background-color: #a0a0a0;
+    }
+
     .log-card-color-success {
       border: 6px solid #7de38e;
       background-color: #7de38e;
@@ -262,22 +267,23 @@ style="border: 6px solid ${
           trigger,
           id,
           data,
+          at,
           isRestoreTrigger
         }) => {
-          if (Object.keys(damntriggers).includes(trigger)) {
-            logs.push({
-              trigger,
-              id,
-              data
-            })
-            if (!isRestoreTrigger) add1ToDataRecevied()
-            if (!isRestoreTrigger) notifyMe(trigger + " triggered!", {
-              body: data,
-              icon: "./img/profile.png",
-              //image: "./img/cover.png"
-            })
-            renderLogs(compactMode)
-          }
+          logs.push({
+            trigger,
+            id,
+            data,
+            at,
+            known: Object.keys(damntriggers).includes(trigger)
+          })
+          if (!isRestoreTrigger) add1ToDataRecevied()
+          if (!isRestoreTrigger) notifyMe(trigger + " triggered!", {
+            body: data,
+            icon: "./img/profile.png",
+            //image: "./img/cover.png"
+          })
+          renderLogs(compactMode)
         })
         
       calculateData()
@@ -317,8 +323,10 @@ style="border: 6px solid ${
         logs.forEach(({
           trigger,
           id,
-          data
+          data,
+          at
         }) => {
+          console.log(at)
           /*
                 <br><div class="card">
                   <header class="card-header">
@@ -344,10 +352,10 @@ style="border: 6px solid ${
                 ` */
           document.getElementById("logs").innerHTML += `
 <br>
-<div class="card log-card log-card-color-${damntriggers[trigger].type}" >
+<div class="card log-card log-card-color-${damntriggers[trigger] ? damntriggers[trigger].type : 'unknown'}" >
   <header class="card-header">
     <p class="card-header-title has-text-white">
-      ${escapeOutput(damntriggers[trigger].name)} Trigger Hit (${id})
+      ${escapeOutput(damntriggers[trigger] ? damntriggers[trigger].name : `Unknown (${trigger})`)} Trigger Hit (${id}) at ${new Date(at).toUTCString()}
     </p>
     <a href="#" class="card-header-icon" aria-label="more options" onclick="deleteLog('${id}')">
       <span class="icon has-text-white">
@@ -357,10 +365,8 @@ style="border: 6px solid ${
   </header>
   <div class="card-content">
     <div class="content has-text-white">
-
-                        <b>Trigger Description:</b> ${escapeOutput(damntriggers[trigger].description)}<br>
+                        <b>Trigger Description:</b> ${escapeOutput(damntriggers[trigger] ? damntriggers[trigger].description : 'Unknown')}<br>
                         <br><b>Captured Data:</b> ${escapeOutput(data)}
-
     </div>
   </div>
 </div>
@@ -372,6 +378,7 @@ style="border: 6px solid ${
         <table class="table">
   <thead>
     <tr>
+      <th>Timestamp</th>
       <th>Trigger</th>
       <th>Data</th>
       <th>Controls</th>
@@ -380,8 +387,10 @@ style="border: 6px solid ${
   <tbody>
     ${(() => {
       var tbody = ``
-      logs.filter(a => damntriggers[a.trigger]).forEach(({trigger,id,data}) => {
-        tbody += ` <tr>
+      logs.filter(a => damntriggers[a.trigger]).forEach(({trigger,id,data,at}) => {
+        tbody += `
+        <tr>
+          <td>${new Date(at).toUTCString()}</td> 
           <th> ${
             escapeOutput(trigger)
           } <span class="has-text-${escapeOutput(damntriggers[trigger].type)}" > ${
@@ -393,6 +402,7 @@ style="border: 6px solid ${
           <button class="is-small button is-danger"
         onclick="deleteLog('${id}')"> X </button> <button class="is-small button is-info"
         onclick="info('${trigger}')"> i </button> </td> </tr>
+
         `
       })
       return tbody

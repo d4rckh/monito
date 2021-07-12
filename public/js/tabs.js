@@ -12,4 +12,4 @@ function openCity(cityName) {
     document.getElementById("Tab-" + cityName + "Button").className += " active";
   }
 
-  openCity("Stats")
+  openCity("Logs")

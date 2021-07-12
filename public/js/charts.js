@@ -107,7 +107,7 @@ function sortByKey(array, key) {
 }
 
 function updateGraph() {
-    myChart.data.labels = Object.keys(data2).map(key => damntriggers[key].name)
+    myChart.data.labels = Object.keys(data2).map(key => damntriggers[key] ? damntriggers[key].name : "Unknown")
     myChart.data.datasets[0].data = Object.values(data2)
     myChart.update()
 
